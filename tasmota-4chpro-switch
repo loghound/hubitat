@@ -6,7 +6,8 @@
  *  Design Usage:
  *  This driver is a generic MQTT driver to pull and post to a MQTT broker.
  *
- *  Copyright 2019 Aaron Ward
+ *  Copyright 2019 Aaron Ward (original author)
+ *  Modifications to support a simple tasmota switch by John McLughlin
  *  
  *  This driver is free and you may do as you likr with it.  
  *
@@ -72,7 +73,7 @@ def installed() {
 
 def setVersion(){
     appName = "MQTTGenericDriver"
-	version = "1.0.3" 
+	version = "1.0.4" 
     dwInfo = "${appName}:${version}"
     sendEvent(name: "dwDriverInfo", value: dwInfo, displayed: true)
 }
