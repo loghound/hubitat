@@ -1,0 +1,26 @@
+{
+  "packageName": "Kuna",
+  "author": "John McLaughlin",
+  "version": "1.0",
+  "minimumHEVersion": "2.2.0.132",
+  "dateReleased": "2020-05-30",
+  "apps": [
+    {
+      "id": "9329307a-debb-4503-b04b-37a971953572",
+      "name": "Kuna (connect)",
+      "namespace": "loghound",
+      "location": "https://raw.githubusercontent.com/loghound/Kuna4Hubitat/master/Kuna(connect).groovy",
+      "required": true,
+      "oauth": false
+    }
+  ],
+  "drivers": [
+    {
+      "id": "0bb2eb10-351a-494c-a835-50c62762be11",
+      "name": "Kuna Light",
+      "namespace": "loghound",
+      "location": "https://raw.githubusercontent.com/loghound/Kuna4Hubitat/master/Kuna Light.groovy",
+      "required": true
+    }
+  ]
+}
