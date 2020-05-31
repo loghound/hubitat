@@ -26,7 +26,7 @@ metadata {
             namespace: "loghound", 
             author: "John McLaughlin", 
             vid: "generic-switch",
-            importURL: "https://raw.githubusercontent.com/loghound/hubitat/master/KunaLight.groovy"
+            importURL: "https://raw.githubusercontent.com/loghound/hubitat/master/KunaLight-driver.groovy"
         ) {
             capability "Switch"
             capability "Actuator"

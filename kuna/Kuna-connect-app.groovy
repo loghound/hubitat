@@ -24,7 +24,7 @@ definition(
         author: "John McLaughlin",
         description: "Service Manager for kuna switches",
         category: "Convenience",
-        importURL: "https://raw.githubusercontent.com/loghound/hubitat/master/Kuna(connect).groovy",
+        importURL: "https://raw.githubusercontent.com/loghound/hubitat/master/Kuna-connect-app.groovy",
         iconUrl: "http://cdn.device-icons.smartthings.com/Lighting/light9-icn.png",
         iconX2Url: "http://cdn.device-icons.smartthings.com/Lighting/light9-icn@2x.png",
         iconX3Url: "http://cdn.device-icons.smartthings.com/Lighting/light9-icn@3x.png"

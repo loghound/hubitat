@@ -8,7 +8,7 @@ There are two things that you can do with the devices once they are installed.
 
 # How to install ##
 
-1.  Install the app ( [Kuna(connect).groovy] (https://github.com/loghound/hubitat/blob/master/kuna/Kuna(connect).groovy) ) and driver ( [KunaLight.groovy](https://github.com/loghound/hubitat/blob/master/kuna/KunaLight.groovy) )
+1.  Install the app ( [Kuna-connect.groovy] (https://github.com/loghound/hubitat/blob/master/kuna/Kuna-connect-app.groovy) ) and driver ( [KunaLight.groovy](https://github.com/loghound/hubitat/blob/master/kuna/KunaLight-driver.groovy) )
 2.  Run the app and enter crednentials
 3.  Profit. App should add the devices in your account 
 
