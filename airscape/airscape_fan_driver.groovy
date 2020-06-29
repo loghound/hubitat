@@ -38,6 +38,10 @@ metadata {
         attribute "temperatureoa", "number"
         attribute "temperatureat", "number"
         attribute "timeLeft", "number"
+        attribute "level","number"
+
+        command "speedDown"
+        command "addTime"
 
       //  command addTime
 
@@ -127,7 +131,7 @@ def addTime () {
     def result = []
     result.add(setDir(2))  // '2' equals add time
     sendHubCommand(result)  // send to deice 
-    // runIn(5, poll)      // in 5 seconds check poll device.. unecessary?
+    runIn(30, poll)      // in 5 seconds check poll device.. unecessary?
     log.debug("Time added")
 
 }
@@ -169,6 +173,15 @@ def children=getChildDevices()
 */	
 }
 
+def speedDown () {
+    def result = []
+    result.add(setDir(3))  // '3' equals speed down
+    sendHubCommand(result)  // send to deice 
+    runIn(60, poll)      // in 5 seconds check poll device.. unecessary?
+    log.debug("Time added")
+}
+
+
 /* on() and off() are used as part of binary switches */
 
 def on() {
@@ -193,6 +206,7 @@ def off() {
 
 def level(level, rate) {
     log.debug "level is ${level}"
+    return state.level
 }
 
 
@@ -202,7 +216,7 @@ def levelHandler() {
     log.debug "Level Handler called with a desired level of ${state.desiredFanSpeed} and an existing state of ${state.currentFanSpeed}"
 
     def i // counting varialbe
-    if (state.desiredFanSpeed == 0) {
+    if (state.desiredFanSpeed <= 0) {
         result.add(setDir(4))
         log.debug "Set fan to off ${result}"
     } else if (state.desiredFanSpeed - state.currentFanSpeed > 0) {
@@ -238,6 +252,10 @@ def setLevel(level) {
     log.debug("Returning result from set level ${result}")
     return result
 
+}
+
+def level() {
+    return state.level;
 }
 
 def setDir(dir) {
@@ -305,12 +323,17 @@ def parse(String description) {
 
 
 
+
     log.debug "Body text is:\n$txt"
 
+    if (fanspd) {
     state.level = fanspd[0][1].toInteger()
 
     state.actualFanSpeed = fanspd[0][1].toInteger()
 
+    log.debug "Actual Fan Speed is $state.level"
+    result << createEvent(name:"level",value:state.level,displayed:true)
+    }
     def doorStatus = txt =~ ~/doorinprocess>(.+?)</
 	
 	def outsideAirDNI="${device.deviceNetworkId}-OA"
@@ -375,10 +398,7 @@ def parse(String description) {
     /* data managemenet */
 
 
-
-
-
-
+    log.debug "poll results are $result"
     return result
 }
 
