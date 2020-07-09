@@ -10,10 +10,10 @@
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
  *
- * 	Airscape Fan (Gen 2 controls)
+ *     Airscape Fan (Gen 2 controls)
  *
- * 	Author: loghound
- * 	Date: May 1, 2018
+ *     Author: loghound
+ *     Date: May 1, 2018
  */
 preferences {
     input("ip", "string", title: "IP Address", description: "10.0.0.236", defaultValue: "10.0.0.236", required: true, displayDuringSetup: true)
@@ -32,7 +32,7 @@ metadata {
 
         capability "Temperature Measurement"
         capability "Switch"
-        capability "Switch Level"
+        capability "SwitchLevel"
 
         attribute "temperature", "number"
         attribute "temperatureoa", "number"
@@ -41,6 +41,7 @@ metadata {
         attribute "level","number"
 
         command "speedDown"
+        command "speedUp"
         command "addTime"
 
       //  command addTime
@@ -139,38 +140,38 @@ def addTime () {
 
 def configure() {
     log.debug "************ In Configure ***********"
-	def outsideAirDNI="${device.deviceNetworkId}-OA"
-	def atticAirDNI="${device.deviceNetworkId}-Attic"
-	def roomAirDNI="${device.deviceNetworkId}-Room"
+    def outsideAirDNI="${device.deviceNetworkId}-OA"
+    def atticAirDNI="${device.deviceNetworkId}-Attic"
+    def roomAirDNI="${device.deviceNetworkId}-Room"
 
-	if (getChildDevice(atticAirDNI)==null) {
-	addChildDevice("hubitat","Virtual Temperature Sensor",atticAirDNI, [name: "Attic Temperature", isComponent: false])
-	}
-		 	if (getChildDevice(outsideAirDNI)==null) {
-	addChildDevice("hubitat","Virtual Temperature Sensor",outsideAirDNI, [name: "Outside Temperature", isComponent: false])
-			}
-			 	if (getChildDevice(roomAirDNI)==null) {
-	addChildDevice("hubitat","Virtual Temperature Sensor",roomAirDNI, [name: "Room Temperature", isComponent: false])
-				}
-	
-	log.debug "ip address is $ip"
-	
-	
-	// dev myId=device.deviceNetworkId()
-	// log.debug "DNI is ${device.deviceNetworkId}"
+    if (getChildDevice(atticAirDNI)==null) {
+    addChildDevice("hubitat","Virtual Temperature Sensor",atticAirDNI, [name: "Attic Temperature", isComponent: false])
+    }
+             if (getChildDevice(outsideAirDNI)==null) {
+    addChildDevice("hubitat","Virtual Temperature Sensor",outsideAirDNI, [name: "Outside Temperature", isComponent: false])
+            }
+                 if (getChildDevice(roomAirDNI)==null) {
+    addChildDevice("hubitat","Virtual Temperature Sensor",roomAirDNI, [name: "Room Temperature", isComponent: false])
+                }
+    
+    log.debug "ip address is $ip"
+    
+    
+    // dev myId=device.deviceNetworkId()
+    // log.debug "DNI is ${device.deviceNetworkId}"
 /*
 def children=getChildDevices()
-	children.each { child ->
-		child.setTemperature(432);
-    	log.debug "child ${child.displayName} has deviceNetworkId ${child.deviceNetworkId}"
-	}
-	
-	dev device=getChildDevices.find(it.deviceNetworkId=="$ip")
-	log.debug(device)
-	
-	
+    children.each { child ->
+        child.setTemperature(432);
+        log.debug "child ${child.displayName} has deviceNetworkId ${child.deviceNetworkId}"
+    }
+    
+    dev device=getChildDevices.find(it.deviceNetworkId=="$ip")
+    log.debug(device)
+    
+    
 
-*/	
+*/    
 }
 
 def speedDown () {
@@ -178,7 +179,14 @@ def speedDown () {
     result.add(setDir(3))  // '3' equals speed down
     sendHubCommand(result)  // send to deice 
     runIn(60, poll)      // in 5 seconds check poll device.. unecessary?
-    log.debug("Time added")
+    log.debug("Fan Speed Down")
+}
+def speedUp() {
+    def result = []
+    result.add(setDir(1))  // '3' equals speed down
+    sendHubCommand(result)  // send to deice 
+    runIn(60, poll)      // in 5 seconds check poll device.. unecessary?
+    log.debug("Fan Speed Up")
 }
 
 
@@ -206,6 +214,11 @@ def off() {
 
 def level(level, rate) {
     log.debug "level is ${level}"
+    if (level >=0 && level <=5) {
+        state.desiredFanSpeed=level
+        levelHandler()
+        return state.desiredFanSpeed;
+    }
     return state.level
 }
 
@@ -335,34 +348,34 @@ def parse(String description) {
     result << createEvent(name:"level",value:state.level,displayed:true)
     }
     def doorStatus = txt =~ ~/doorinprocess>(.+?)</
-	
-	def outsideAirDNI="${device.deviceNetworkId}-OA"
-	def atticAirDNI="${device.deviceNetworkId}-Attic"
-	def roomAirDNI="${device.deviceNetworkId}-Room"
+    
+    def outsideAirDNI="${device.deviceNetworkId}-OA"
+    def atticAirDNI="${device.deviceNetworkId}-Attic"
+    def roomAirDNI="${device.deviceNetworkId}-Room"
 
     if (house_temp) {
         state.temperature = house_temp[0][1]
         result << createEvent(name: "temperature", value: state.temperature, displayed: true)
-		def dev=getChildDevice(roomAirDNI)
-		dev.setTemperature(state.temperature)
-		
+        def dev=getChildDevice(roomAirDNI)
+        dev.setTemperature(state.temperature)
+        
         log.debug "Setting inside temperature to $state.temperature"
     }
 
     if (oa_temp) {
         state.temperatureoa = oa_temp[0][1]
         result << createEvent(name: "temperatureoa", value: state.temperatureoa, displayed: true)
-		def dev=getChildDevice(outsideAirDNI)
-		dev.setTemperature(state.temperatureoa)
+        def dev=getChildDevice(outsideAirDNI)
+        dev.setTemperature(state.temperatureoa)
         log.debug "Setting OA temperature to $state.temperatureoa"
     }
 
     if (attic_temp) {
         state.temperatureattic = attic_temp[0][1]
         result << createEvent(name: "temperatureattic", value: state.temperatureattic, displayed: true)
-		def dev=getChildDevice(atticAirDNI)
-		dev.setTemperature(state.temperatureattic)
-		
+        def dev=getChildDevice(atticAirDNI)
+        dev.setTemperature(state.temperatureattic)
+        
         log.debug "Setting attic temperature to $state.temperatureattic"
     }
 
