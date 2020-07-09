@@ -13,7 +13,11 @@
  *     Airscape Fan (Gen 2 controls)
  *
  *     Author: loghound
- *     Date: May 1, 2018
+ *     Date: July 8, 2020
+ *     
+ *     Note -- this was the first driver I ever wrote in groovy (in smart things) -- it's pretty hacky as I was learning smart things
+ *     and groovy -- I've gotten it to work well enough for my purposes (first on smartthigns, now on hubitat) but it's far from
+ *     general purpose -- specifically it assumes you have a 5 speed fan (but there are probably other oddities)
  */
 preferences {
     input("ip", "string", title: "IP Address", description: "10.0.0.236", defaultValue: "10.0.0.236", required: true, displayDuringSetup: true)
@@ -403,7 +407,7 @@ def parse(String description) {
 
     } else {
         result << createEvent(name: "switch", value: "on", displayed: true)
-        result << createEvent(name: "level", value: spdInt, displayed: true)
+        result << createEvent(name: "level", value: state.level, displayed: true)
         log.debug "***switch set to on with level $state.level"
     }
     state.currentFanSpeed = state.level
