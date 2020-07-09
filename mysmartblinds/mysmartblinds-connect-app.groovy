@@ -111,57 +111,108 @@ def uninstalled() {
  * Authentication
  *****************************************/
 // curl -H 'Host: mysmartblinds.auth0.com' -H 'accept: */*' -H 'content-type: application/json'
-// -H 'auth0-client: eyJuYW1lIjoiTG9jay5pT1MiLCJ2ZXJzaW9uIjoiMS4yOS4yIn0'
+// -H 'auth0-client: aFSuYW1lIjoiTG9jay5pT1MiLCJ2ZXJzaW9uIjoiMS4yOS4yIn0'
 //-H 'user-agent: MySmartBlinds/1.4.6 (iPhone; iOS 11.4.1; Scale/3.00)'
 // -H 'accept-language: en-US;q=1'
-// --data-binary '{"device":"Johns iphone","password":"PASSWORD","scope":"openid offline_access","grant_type":"password","username":"EMAIL","client_id":"1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB","connection":"Username-Password-Authentication"}'
+// --data-binary '{"device":"Johns iphone","password":"PASSWORD","scope":"openid offline_access","grant_type":"password","username":"EMAIL","client_id":"3r34231c3vuqWtpUt1U577QX38GzCJZzm8AFJ","connection":"Username-Password-Authentication"}'
 // --compressed 'https://mysmartblinds.auth0.com/oauth/ro’
 // Here is what is actually required
 // curl -H 'Host: mysmartblinds.auth0.com' -H 'accept: */*' -H 'content-type: application/json'
-// --data-binary '{"device":"Johns iphone","password":"PASSWORD","scope":"openid offline_access","grant_type":"password","username":"EMAIL","client_id":"1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB","connection":"Username-Password-Authentication"}' --compressed 'https://mysmartblinds.auth0.com/oauth/ro'
+// --data-binary '{"device":"Johns iphone","password":"PASSWORD","scope":"openid offline_access","grant_type":"password","username":"EMAIL","client_id":"fgdaa322342323231c3vuqWtpUt1U577QX38GzCJZzm8AFJ","connection":"Username-Password-Authentication"}' --compressed 'https://mysmartblinds.auth0.com/oauth/ro'
 
-def logInToMySmartBlinds() {
 
-    log.debug "logInToMySmartBlinds"
+/* 
+ Async calls as documentd here https://community.hubitat.com/t/async-http-calls/1694
+ Duplicate the curl below
+
+ curl --location --request POST 'https://postman-echo.com/post' \
+ --data 'foo1=bar1' \
+ --data 'foo2=bar2'
+*/ 
+def _privateAsyncTest() {
+    log.debug "_privateAsyncTest"
 
     def params = [
-            uri    : 'https://mysmartblinds.auth0.com',
-            path   : '/oauth/ro',
-            headers: [
-                    'Content-Type': 'application/json',
-                    'User-Agent'  : 'Luna/2.3.6 (iPhone; iOS 11.4; Scale/3.00)',
-                    'method'      : 'post',
-                    'body'        : body,
-
+            uri    : 'https://postman-echo.com/headers',
+            timeout : 100,
+            contentType: 'application/json',
+            requestContentType: 'application/json',
+            headers:[ 
+                   'User-Agent'  : 'Luna/2.3.6 (iPhone; iOS 11.4; Scale/3.00)'
             ],
-            body   : ["username"  : mySmartBlindsEmail,
-                      "password"  : mySmartBlindsPassword,
-                      "device"    : "Johns Iphone",
-                      "scope"     : "openid offline_access",
-                      "grant_type": "password",
-                      "client_id" : "1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB",
-                      "connection": "Username-Password-Authentication",
-            ]
+
+            body   : [
+                        "foo"  : "bar",
+                        "foo1"  : "bar1",
+                    ]
     ]
 
-    log.debug "Update Token Params $params"
+    try {
+        asynchttpGet("private_handler", params,params)
+    } catch (e) {
+        log.error "Error in asynchttpPos: $e \n $params"
+  }
 
-    asynchttpPost(authTokenHandler, params)
+}
+def private_handler (response,data) {
+    if (response.hasError()) {
+        log.debug "private-handler raw error response: $response.errorData"
+        log.debug "private-handler total error is $response"
+        log.debug response.getStatus()
+        log.debug "private-handler error data is $data"
+    } else  {
 
+            dataR=response.getData()
+            log.debug "private-handler was good! $dataR"
+
+    }
+}
+
+def logInToMySmartBlinds() {
+    _privateAsyncTest()
+    return
+
+
+    def params = [
+            uri    : 'https://mysmartblinds.auth0.com/oauth/ro',
+            timeout : 100,
+            contentType: 'application/json',
+            requestContentType: 'application/json',
+            headers: [
+                "User-Agent"  : 'Luna/2.3.6 (iPhone; iOS 11.4; Scale/3.00)'
+            ],
+
+            body   : [
+                        "username"  : mySmartBlindsEmail,
+                        "password"  : mySmartBlindsPassword,
+                        "device"    : "Johns Iphone",
+                        "scope"     : "openid offline_access",
+                        "grant_type": "password",
+                        "client_id" : "adfasd1c3vuqWtpUt1U577a38GzCJZzm8AFJ",
+                        "connection": "Username-Password-Authentication",
+                    ]
+    ]
+
+    //log.debug "Update Token Params $params"
+    try {
+        asynchttpPost("authTokenHandler", params,params)
+    } catch (e) {
+        log.error "Error in logInToMySmartBlinds(): $e \n $params"
+  }
 }
 //
 // response is like
-// {"id_token":"eyJ0eXAiOiJxxGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiaWF0IjoxNTM0NTU4NzEwLCJleHAiOjE1MzQ1OTQ3MTB9.FFB5Vw9VmZZ6uLN2NSMCRTlG6KoOwjArBGW-kVALgFc",
+// {"id_token":"aFS0eXAiOiJxxGciOiJIUzI1NiJ9.aFSpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImFafdasdf323GgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiaWF0IjoxNTM0NTU4NzEwLCJleHAiOjE1MzQ1OTQ3MTB9.FFB5Vw9VmZZ6uLN2NSMCRTlG6KoOwjArBGW-kVALgFc",
 // "refresh_token":"x5jQ_lu_aIxxc5N3kNyaF_QD5DMK",
 // "access_token":"qhbmNbiY5x-VMQxWxxTgo0Tbw-I",
 // "token_type":"bearer"}
 
 def authTokenHandler(response, data) {
     if (response.hasError()) {
-        log.debug "raw error response: $response.errorData"
-        log.debug "total error is $response"
+        log.debug "authTokenHandler raw error response: $response.errorData"
+        log.debug "authTokenHandler total error is $response"
         log.debug response.getStatus()
-        log.debug "error data is $data"
+        log.debug "authTokenHandler error data is $data"
     } else {
         def jsonData = response.json
         state.id_token = jsonData['id_token']
@@ -176,7 +227,7 @@ def authTokenHandler(response, data) {
     //adjustBlinds("2kJr9hLZ",0)
 }
 // Reauthenticate --- do this if you have a valid refresh_token and     client_id     (known as access_token)
-// curl -H 'Host: mysmartblinds.auth0.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client: eyJuYW1lIjoiTG9jay5pT1MiLCJ2ZXJzaW9uIjoiMS4yOS4yIn0' -H 'user-agent: MySmartBlinds/1.4.6 (iPhone; iOS 11.4.1; Scale/3.00)' -H 'accept-language: en-US;q=1' --data-binary '{"client_id":"1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB","scope":"openid offline_access","device":"Johns iphone","refresh_token":"MdEcAvrtOVtHWZtP-3b0_CROAEGFVtHJL9oZNegiDjuAW","api_type":"app","grant_type":"urn:ietf:params:oauth:grant-type:jwt-bearer"}' --compressed 'https://mysmartblinds.auth0.com/delegation’
+// curl -H 'Host: mysmartblinds.auth0.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client: aFSuYW1lIjoiTG9jay5pT1MiLCJ2ZXJzaW9uIjoiMS4yOS4yIn0' -H 'user-agent: MySmartBlinds/1.4.6 (iPhone; iOS 11.4.1; Scale/3.00)' -H 'accept-language: en-US;q=1' --data-binary '{"client_id":"gdsa1c3vuqWtpUt1U577QX38GzCJZzm8AFJ","scope":"openid offline_access","device":"Johns iphone","refresh_token":"MdEcAvrtOVtHWZtP-3b0_CROAEGFVtHJL9oZNegiDjuAW","api_type":"app","grant_type":"urn:ietf:params:oauth:grant-type:jwt-bearer"}' --compressed 'https://mysmartblinds.auth0.com/delegation’
 
 def reauthToken() {
 
@@ -192,7 +243,7 @@ def reauthToken() {
                     'body'        : body,
 
             ],
-            body   : """{"client_id":"1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB","scope":"openid offline_access","device":"Johns iphone","refresh_token":"${
+            body   : """{"client_id":"afsda1c3vuqWtpUt1U577QX38GzCJZzm8AFJ","scope":"openid offline_access","device":"Johns iphone","refresh_token":"${
                 state.refresh_token
             }","api_type":"app","grant_type":"urn:ietf:params:oauth:grant-type:jwt-bearer"}"""
     ]
@@ -206,12 +257,12 @@ def reauthToken() {
 // response is like
 //      "token_type": "Bearer",
 //    "expires_in": 36000,
-//    "id_token": "eyJ0eXAiREWWiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215c21hcnRibGluZHMuFFFGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NzU0MDQ0LCJpYXQiOjE1MzQ3MTgwNDQsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.2UTknz8YqEgP-drA9REFEWlTQ7YL0X23Fe2JgM"
+//    "id_token": "aFS0eXAiREWWiLCJhbGciOiJIUzI1NasdfasfasdfashcnRibGluZHMuFFFGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NzU0MDQ0LCJpYXQiOjE1MzQ3MTgwNDQsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.2UTknz8YqEgP-drA9REFEWlTQ7YL0X23Fe2JgM"
 //}
 
 def reAuthTokenHandler(response, data) {
     if (response.hasError()) {
-        log.error "raw error response: $response.errorData"
+        log.error "reauth token handler raw error response: $response.errorData"
         log.error "Will try to get a brand new token"
 
         logInToMySmartBlinds()
@@ -225,7 +276,7 @@ def reAuthTokenHandler(response, data) {
     //adjustBlinds("2kJr9hLZ",0)
 }
 // Get blinds and set up child objectss
-// curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: 1d1c3vuqWxx5gzCJZzm8WOB' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGxxxxiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IFDEjFkMWafMzdnVxV3RwVXxxz1FYNWd6Q0paem04V09CIiwiaWF0IjoxNTM0NTY3MzA4LCJleHAiOjE1MzQ2MDMzMDh9.MfKOiY6hawdqVGJnV_nIFXBXJrmeqZ4SGXE8fywC3PQ' --data-binary '{"query":"query GetUserInfo {  user {    __typename    id    email    globalSmartClosePosition    globalSmartOpenPosition    lastUpdatedGlobalPositionTimestamp    tokenExpiration    locationDescription    latitude    longitude    clientUpdatedAt    rooms {      __typename      userId      id      name      defaultClosePosition      defaultOpenPosition      energySavingsEnabled      energySavingsPosition      energySavingsTemperatureSetPoint      energySavingsResumeEnabled      lastUpdateDefaultPositions      lastUpdateSchedule      scheduleData      deleted      clientUpdatedAt    }    blinds {      __typename      userId      id      roomId      name      encodedPasskey      encodedMacAddress      batteryPercent      hasSyncedPositions      hasSyncedSchedule      lastUpdateName      lastUpdateStatus      passkeyNeedsChanging      reverseRotation      deleted      clientUpdatedAt    }    smartSwitches {      __typename      userId      id      name      encodedMacAddress      blueGroup      greenGroup      redGroup      whiteGroup      yellowGroup      bottomSwitchDefaultBlue      bottomSwitchDefaultGreen      bottomSwitchDefaultRed      bottomSwitchDefaultWhite      bottomSwitchDefaultYellow      topSwitchDefaultBlue      topSwitchDefaultGreen      topSwitchDefaultRed      topSwitchDefaultWhite      topSwitchDefaultYellow      deleted      clientUpdatedAt    }    hubs {      __typename      id      userId      encodedMacAddress      rssi      certificateId      name      nordicVersion      wifiVersion      deleted    }  }}","variables":null}' --compressed 'https://api.mysmartblinds.com/v1/graphql'
+// curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: asdfgdas1c3aaewxx38GzCJZzm8AFJ' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer aFS0eXAiOiJKV1QiLCJhbG23afasdfadszovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImFadfasdfaGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IFDEjFkMWafMzdnVxV3RwVXxxz1FYNWd6Q0paem04V09CIiwiaWF0IjoxNTM0NTY3MzA4LCJleHAiOjE1MzQ2MDMzMDh9.MfKOiY6hawdqVGJnV_nIFXBXJrmeqZ4SGXE8fywC3PQ' --data-binary '{"query":"query GetUserInfo {  user {    __typename    id    email    globalSmartClosePosition    globalSmartOpenPosition    lastUpdatedGlobalPositionTimestamp    tokenExpiration    locationDescription    latitude    longitude    clientUpdatedAt    rooms {      __typename      userId      id      name      defaultClosePosition      defaultOpenPosition      energySavingsEnabled      energySavingsPosition      energySavingsTemperatureSetPoint      energySavingsResumeEnabled      lastUpdateDefaultPositions      lastUpdateSchedule      scheduleData      deleted      clientUpdatedAt    }    blinds {      __typename      userId      id      roomId      name      encodedPasskey      encodedMacAddress      batteryPercent      hasSyncedPositions      hasSyncedSchedule      lastUpdateName      lastUpdateStatus      passkeyNeedsChanging      reverseRotation      deleted      clientUpdatedAt    }    smartSwitches {      __typename      userId      id      name      encodedMacAddress      blueGroup      greenGroup      redGroup      whiteGroup      yellowGroup      bottomSwitchDefaultBlue      bottomSwitchDefaultGreen      bottomSwitchDefaultRed      bottomSwitchDefaultWhite      bottomSwitchDefaultYellow      topSwitchDefaultBlue      topSwitchDefaultGreen      topSwitchDefaultRed      topSwitchDefaultWhite      topSwitchDefaultYellow      deleted      clientUpdatedAt    }    hubs {      __typename      id      userId      encodedMacAddress      rssi      certificateId      name      nordicVersion      wifiVersion      deleted    }  }}","variables":null}' --compressed 'https://api.mysmartblinds.com/v1/graphql'
 
 private getAllBlinds() {
     log.debug "Getting blinds and setting up child devices"
@@ -249,19 +300,19 @@ private getAllBlinds() {
 }
 /*
 {
-	"data": {
-		"user": {
-			"__typename": "User",
-			"id": "auth0|58cc5615FDASD13369037233a15c",
-			"email": "EMAIL",
-			"globalSmartClosePosition": 1,
-			"globalSmartOpenPosition": 0.5,
-			"lastUpdatedGlobalPositionTimestamp": 0,
-			"tokenExpiration": 1534603308,
-			"locationDescription": "Santa Rosa, CA  95405\nUnited States",
-			"latitude": 38,
-			"longitude": -122,
-			"clientUpdatedAt": 1519001129.4557738,
+    "data": {
+        "user": {
+            "__typename": "User",
+            "id": "auth0|58cc5615FDASD13369037233a15c",
+            "email": "EMAIL",
+            "globalSmartClosePosition": 1,
+            "globalSmartOpenPosition": 0.5,
+            "lastUpdatedGlobalPositionTimestamp": 0,
+            "tokenExpiration": 1534603308,
+            "locationDescription": "Santa Rosa, CA  95405\nUnited States",
+            "latitude": 38,
+            "longitude": -122,
+            "clientUpdatedAt": 1519001129.4557738,
       "blinds": [{
             "__typename": "Blind",
             "userId": "auth0|58cc5615413369037233a15c",
@@ -291,6 +342,8 @@ private getAllBlinds() {
 */
 
 def blindsGetChildren(response, data) {
+    log.info $response
+    log.trace $data
     if (response.hasError()) {
         log.debug "raw error response: $response.errorData"
     } else {
@@ -330,11 +383,11 @@ def blindsGetChildren(response, data) {
     }
     // adjustBlinds("2kJr9hLZ",100)
 }
-//curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: 1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NTgwNDAzLCJpYXQiOjE1MzQ1NDQ0MDMsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.5QL7objl7kOi0tYFYcJFztv2gvKFo9-haqS4RUJe4kE'
+//curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: gdasga1c3vuqWtpUt1U577QX38GzCJZzm8AFJ' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer aFS0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.aFSpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImFadfasfaGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NTgwNDAzLCJpYX5323234231241mF6cCI6IjFkMWMzdnVxV3RwVXfsdsWd6Q0paem04V09CIn0.5QL7objl7kOi0tYFYcJFztv2gvKFo9-haqS4RUJe4kE'
 // --data-binary '{"query":"mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {  updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"position":106,"blinds":["2kJr9hLZ"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql’
 // setBlind("2kJr9hLZ",0)
 // GetBlindsState -- update the blinds states as far as we can tell
-//   curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: 1d1c3vuqWtpU5gzCJZzm8WOB' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYIjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM1MjcyNTA1LCJpYXQiOjE1MzUyMzY1MDUsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.h-Uh8vXRCXJh-jd4arHxUcU_wsAbJxhgedj29Ao0KbA' --data-binary '{"query":"query GetBlindsState($blinds: [String]) {  blindsState(encodedMacAddresses: $blinds) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"blinds":["6i5DKpHF","sXk43hD6"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql'
+//   curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: gdasdagda1c3vuqWtpU38GzCJZzm8AFJ' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer aFS0eXAiOiJKadsfadsfas9.aFSpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYIjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM1MjcyNTA1LCJpYXQiOjE1MzUyMzY1MDUsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.h-Uh8vXRCXJh-jd4arHxUcU_wsAbJxhgedj29Ao0KbA' --data-binary '{"query":"query GetBlindsState($blinds: [String]) {  blindsState(encodedMacAddresses: $blinds) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"blinds":["6i5DKpHF","sXk43hD6"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql'
 def getBlindsStatus(dni) {
     log.debug "Updating Status of Blinds..."
 
@@ -374,21 +427,21 @@ def getBlindsStatus(dni) {
 }
 /* Can be either a returned with data
     {
-	"data": {
-		"blindsState": [{
-			"__typename": "BlindState",
-			"encodedMacAddress": "6i5DKpHF",
-			"position": 2,
-			"rssi": -68,
-			"batteryLevel": 62
-		}, {
-			"__typename": "BlindState",
-			"encodedMacAddress": "sXk43hD6",
-			"position": 0,
-			"rssi": -76,
-			"batteryLevel": 100
-		}]
-	}
+    "data": {
+        "blindsState": [{
+            "__typename": "BlindState",
+            "encodedMacAddress": "6i5DKpHF",
+            "position": 2,
+            "rssi": -68,
+            "batteryLevel": 62
+        }, {
+            "__typename": "BlindState",
+            "encodedMacAddress": "sXk43hD6",
+            "position": 0,
+            "rssi": -76,
+            "batteryLevel": 100
+        }]
+    }
 }
 
 If the blind wasn't found then position will be -1, rssi will be 0 and batteryLevel will be -1
@@ -522,13 +575,13 @@ def childSetLevel(dni, value) {
     log.debug "childSetLevel ${dni} ${value} "
     adjustBlinds(dni, 2 * value)
 }
-//curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: 1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NTgwNDAzLCJpYXQiOjE1MzQ1NDQ0MDMsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.5QL7objl7kOi0tYFYcJFztv2gvKFo9-haqS4RUJe4kE' --data-binary '{"query":"mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {  updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"position":106,"blinds":["2kJr9hLZ"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql’
+//curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: 1sdfsfdsU577QX38GzCJZzm8AFJ' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer aFS0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.aFSpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImFgdasGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NTgwNDAzLCJpYXQiOjE1MzQ1NDQ0MDMsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.5QL7objl7kOi0tYFYcJFztv2gvKFo9-haqS4RUJe4kE' --data-binary '{"query":"mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {  updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"position":106,"blinds":["2kJr9hLZ"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql’
 // Child On means 'open' blinds (value = 100), 200 is full up and 0 is full down
 def childOn(dni, v = 100) {
     log.debug "childOn ${dni} $v"
     adjustBlinds(dni, v)
 }
-// curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: 1d1c3vuqWtpUt1U577QX5gzCJZzm8WOB' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215c21hcnRibGluZHMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NTgwNDAzLCJpYXQiOjE1MzQ1NDQ0MDMsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.5QL7objl7kOi0tYFYcJFztv2gvKFo9-haqS4RUJe4kE' --data-binary '{"query":"mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {  updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"position":0,"blinds":["2kJr9hLZ"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql’
+// curl -H 'Host: api.mysmartblinds.com' -H 'accept: */*' -H 'content-type: application/json' -H 'auth0-client-id: asdfadfaasdaspUt1U5asd' -H 'user-agent: MySmartBlinds/0 CFNetwork/902.2 Darwin/17.7.0' -H 'accept-language: en-us' -H 'authorization: Bearer aFS0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.aFSpc3MiOiJodHRwczovLafsdaadsfaZHMuYXV0aDAuY29tLyIsInN1YiI6ImFfdafadGgwfDU4Y2M1NjE1NDEzMzY5MDM3MjMzYTE1YyIsImF1ZCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIiwiZXhwIjoxNTM0NTgwNDAzLCJpYXQiOjE1MzQ1NDQ0MDMsImF6cCI6IjFkMWMzdnVxV3RwVXQxVTU3N1FYNWd6Q0paem04V09CIn0.5QL7objl7kOi0tYFYcJFztv2gvKFo9-haqS4RUJe4kE' --data-binary '{"query":"mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {  updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {    __typename    encodedMacAddress    position    rssi    batteryLevel  }}","variables":{"position":0,"blinds":["2kJr9hLZ"]}}' --compressed 'https://api.mysmartblinds.com/v1/graphql’
 // Child off means closed (in this case position 0 or 200) --
 def childOff(dni, v = 0) {
     log.debug "Child Off ${dni} $v"
