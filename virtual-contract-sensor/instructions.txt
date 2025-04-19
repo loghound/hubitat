@@ -1,0 +1,11 @@
+For the hubitat system I want to create a groovy device drive (and potentially helper app if needed)
+
+This shoud be a 'virtual contact sensor' -- it will combine multiple contact sensors where this device is the state of the last
+contact sensor to change state.  This will be used to create a 'virtual contact sensor' that can be used in automations
+
+use the folder this file is in to hold the code.
+
+for the domain use "loghound" and my name is "John McLaughin"
+
+
+Make a readme file and changelog for every time you do something.
