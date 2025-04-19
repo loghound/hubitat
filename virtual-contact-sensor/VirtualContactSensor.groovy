@@ -63,10 +63,14 @@ def updateSensorState(sensorDeviceId, newState, sensorName = null) {
 }
 
 // Method to manually set the sensor state (for testing)
+// Method to manually set the contact sensor state (useful for testing or manual overrides)
 def setContactState(String newState) {
+    // Check if the new state is valid (either "open" or "closed")
     if (newState == "open" || newState == "closed") {
+        // Update the sensor state using the updateSensorState method
         updateSensorState("manual", newState, "Manual Update")
     } else {
+        // Log a warning if the provided state is invalid
         log.warn "Invalid contact state: ${newState}. Must be 'open' or 'closed'."
     }
 }
